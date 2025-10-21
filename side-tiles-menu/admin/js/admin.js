@@ -309,10 +309,20 @@
 				if (data.success) {
 					showNotice(sideTilesMenu.strings.saveSuccess, 'success');
 					closeTileEditor();
-					// Reload page to show updated tile
-					setTimeout(function () {
-						window.location.reload();
-					}, 1000);
+
+					// Update the tiles list without reloading the page
+					if (data.data.tiles_html) {
+						const tbody = document.querySelector('#tiles-list');
+						if (tbody) {
+							tbody.innerHTML = data.data.tiles_html;
+							console.log('Side Tiles Menu: Tiles list updated, count:', data.data.debug.tiles_count);
+						}
+					} else {
+						// Fallback to reload if no HTML provided
+						setTimeout(function () {
+							window.location.reload();
+						}, 1000);
+					}
 				} else {
 					let errorMsg = data.data && data.data.message ? data.data.message : sideTilesMenu.strings.saveError;
 					if (data.data && data.data.debug) {

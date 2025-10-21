@@ -894,6 +894,30 @@ class Side_Tiles_Menu_Settings {
 	}
 
 	/**
+	 * Render tiles list HTML (for AJAX refresh)
+	 *
+	 * @param array $tiles Tiles array.
+	 * @return string
+	 */
+	private function render_tiles_list( $tiles ): string {
+		ob_start();
+
+		if ( empty( $tiles ) ) {
+			?>
+			<tr>
+				<td colspan="6"><?php esc_html_e( 'Brak kafelków. Kliknij "Dodaj nowy kafelek" aby rozpocząć.', 'side-tiles-menu' ); ?></td>
+			</tr>
+			<?php
+		} else {
+			foreach ( $tiles as $tile ) {
+				$this->render_tile_row( $tile );
+			}
+		}
+
+		return ob_get_clean();
+	}
+
+	/**
 	 * Render stats page
 	 */
 	public function render_stats_page(): void {
@@ -1031,19 +1055,29 @@ class Side_Tiles_Menu_Settings {
 			);
 
 			$options['tiles'] = $tiles;
-			$result           = update_option( $this->option_name, $options );
+
+			// Force update by deleting first (ensures fresh save)
+			delete_option( $this->option_name );
+			$result = add_option( $this->option_name, $options, '', 'no' );
 
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'Side Tiles Menu: Update option result: ' . ( $result ? 'success' : 'failed' ) );
+				error_log( 'Side Tiles Menu: Add option result: ' . ( $result ? 'success' : 'failed' ) );
+				// Verify it was actually saved
+				$verify = get_option( $this->option_name );
+				error_log( 'Side Tiles Menu: Verification - tiles count: ' . count( $verify['tiles'] ?? array() ) );
 			}
 
+			// Always return success if we got here (even if update_option returns false,
+			// it might have saved correctly - WP returns false if value didn't change)
 			wp_send_json_success(
 				array(
-					'message' => __( 'Kafelek zapisany pomyślnie', 'side-tiles-menu' ),
-					'tile'    => $tile,
-					'debug'   => array(
-						'tile_id' => $tile['id'],
-						'updated' => $result,
+					'message'    => __( 'Kafelek zapisany pomyślnie', 'side-tiles-menu' ),
+					'tile'       => $tile,
+					'tiles_html' => $this->render_tiles_list( $tiles ),
+					'debug'      => array(
+						'tile_id'     => $tile['id'],
+						'saved'       => $result,
+						'tiles_count' => count( $tiles ),
 					),
 				)
 			);
