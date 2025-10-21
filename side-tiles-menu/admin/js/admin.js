@@ -287,7 +287,7 @@
 
 		const formData = new FormData(document.getElementById('tile-editor-form'));
 		formData.append('action', 'side_tiles_save_tile');
-		formData.append('nonce', sideTilesMenu.nonce);
+		// Note: nonce is already in the form via wp_nonce_field() as 'side_tiles_nonce'
 
 		// Debug: log form data
 		console.log('Side Tiles Menu: Form data being sent:');

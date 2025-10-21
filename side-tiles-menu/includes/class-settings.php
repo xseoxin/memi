@@ -949,9 +949,11 @@ class Side_Tiles_Menu_Settings {
 		}
 
 		// Check nonce
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'side_tiles_menu_nonce' ) ) {
+		if ( ! isset( $_POST['side_tiles_nonce'] ) || ! wp_verify_nonce( $_POST['side_tiles_nonce'], 'side_tiles_menu_nonce' ) ) {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( 'Side Tiles Menu: Nonce verification failed' );
+				error_log( 'Expected nonce field: side_tiles_nonce' );
+				error_log( 'POST keys: ' . implode( ', ', array_keys( $_POST ) ) );
 			}
 			wp_send_json_error(
 				array(
