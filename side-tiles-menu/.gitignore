@@ -1,0 +1,26 @@
+# WordPress
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build files
+node_modules/
+vendor/
+.sass-cache/
+
+# Compiled translations
+*.mo
+
+# Backup files
+*~
+*.swp
+*.bak

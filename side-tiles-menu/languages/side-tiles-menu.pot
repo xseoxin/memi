@@ -1,0 +1,74 @@
+# Copyright (C) 2025 Side Tiles Menu
+# This file is distributed under the same license as the Side Tiles Menu package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Side Tiles Menu 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/side-tiles-menu\n"
+"POT-Creation-Date: 2025-01-01 12:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2025-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: side-tiles-menu.php
+msgid "Side Tiles Menu"
+msgstr ""
+
+msgid "Dodaje pionowe menu kafelków przy krawędzi strony z pełną personalizacją, animacjami i dostępnością."
+msgstr ""
+
+msgid "Ustawienia"
+msgstr ""
+
+msgid "Kafelki"
+msgstr ""
+
+msgid "Statystyki"
+msgstr ""
+
+msgid "Pozycja i Ułożenie"
+msgstr ""
+
+msgid "Rozmiar i Kształt"
+msgstr ""
+
+msgid "Styl i Kolory"
+msgstr ""
+
+msgid "Animacje"
+msgstr ""
+
+msgid "Widoczność"
+msgstr ""
+
+msgid "Analityka"
+msgstr ""
+
+msgid "Personalizacja"
+msgstr ""
+
+msgid "Zapisz zmiany"
+msgstr ""
+
+msgid "Eksport/Import Ustawień"
+msgstr ""
+
+msgid "Eksportuj ustawienia"
+msgstr ""
+
+msgid "Importuj ustawienia"
+msgstr ""
+
+msgid "Pozycja"
+msgstr ""
+
+msgid "Lewa krawędź"
+msgstr ""
+
+msgid "Prawa krawędź"
+msgstr ""
+
+msgid "Menu boczne"
+msgstr ""

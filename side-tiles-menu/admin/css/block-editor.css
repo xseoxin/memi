@@ -1,0 +1,12 @@
+/**
+ * Gutenberg Block Editor styles for Side Tiles Menu
+ */
+
+.wp-block-side-tiles-menu-tiles {
+	min-height: 100px;
+}
+
+.wp-block-side-tiles-menu-tiles .dashicons {
+	color: #1e1e1e;
+	opacity: 0.6;
+}
