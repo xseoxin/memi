@@ -283,17 +283,29 @@
 	 * Save tile
 	 */
 	function saveTile() {
+		console.log('Side Tiles Menu: saveTile() called');
+
 		const formData = new FormData(document.getElementById('tile-editor-form'));
 		formData.append('action', 'side_tiles_save_tile');
+		formData.append('nonce', sideTilesMenu.nonce);
+
+		// Debug: log form data
+		console.log('Side Tiles Menu: Form data being sent:');
+		for (let pair of formData.entries()) {
+			console.log(pair[0] + ': ' + pair[1]);
+		}
 
 		fetch(sideTilesMenu.ajaxUrl, {
 			method: 'POST',
 			body: formData
 		})
 			.then(function (response) {
+				console.log('Side Tiles Menu: Response status:', response.status);
 				return response.json();
 			})
 			.then(function (data) {
+				console.log('Side Tiles Menu: Response data:', data);
+
 				if (data.success) {
 					showNotice(sideTilesMenu.strings.saveSuccess, 'success');
 					closeTileEditor();
@@ -302,12 +314,17 @@
 						window.location.reload();
 					}, 1000);
 				} else {
-					showNotice(data.data.message || sideTilesMenu.strings.saveError, 'error');
+					let errorMsg = data.data && data.data.message ? data.data.message : sideTilesMenu.strings.saveError;
+					if (data.data && data.data.debug) {
+						console.error('Side Tiles Menu: Debug info:', data.data.debug);
+						errorMsg += ' (Debug: ' + data.data.debug + ')';
+					}
+					showNotice(errorMsg, 'error');
 				}
 			})
 			.catch(function (error) {
-				console.error('Error:', error);
-				showNotice(sideTilesMenu.strings.saveError, 'error');
+				console.error('Side Tiles Menu: Fetch error:', error);
+				showNotice(sideTilesMenu.strings.saveError + ' - Sprawdź konsolę przeglądarki.', 'error');
 			});
 	}
 

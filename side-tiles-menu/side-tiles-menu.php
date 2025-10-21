@@ -132,6 +132,7 @@ class Side_Tiles_Menu {
 	public function activate(): void {
 		// Set default options
 		$default_options = array(
+			'auto_display'       => true,
 			'position'           => 'right',
 			'offset_top'         => '100',
 			'offset_top_unit'    => 'px',

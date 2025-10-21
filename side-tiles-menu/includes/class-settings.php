@@ -155,6 +155,9 @@ class Side_Tiles_Menu_Settings {
 	public function sanitize_settings( $input ): array {
 		$sanitized = array();
 
+		// General
+		$sanitized['auto_display'] = isset( $input['auto_display'] );
+
 		// Position
 		$sanitized['position']           = in_array( $input['position'] ?? '', array( 'left', 'right' ), true ) ? $input['position'] : 'right';
 		$sanitized['offset_top']         = absint( $input['offset_top'] ?? 100 );
@@ -368,6 +371,16 @@ class Side_Tiles_Menu_Settings {
 	private function render_position_settings( $options ): void {
 		?>
 		<table class="form-table">
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Automatyczne wyświetlanie', 'side-tiles-menu' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" name="<?php echo esc_attr( $this->option_name ); ?>[auto_display]" value="1" <?php checked( $options['auto_display'] ?? true ); ?>>
+						<?php esc_html_e( 'Wyświetlaj kafelki automatycznie na wszystkich stronach', 'side-tiles-menu' ); ?>
+					</label>
+					<p class="description"><?php esc_html_e( 'Jeśli wyłączone, musisz użyć shortcode [side_tiles] lub bloku Gutenberg aby wyświetlić kafelki', 'side-tiles-menu' ); ?></p>
+				</td>
+			</tr>
 			<tr>
 				<th scope="row"><?php esc_html_e( 'Pozycja', 'side-tiles-menu' ); ?></th>
 				<td>
@@ -929,60 +942,120 @@ class Side_Tiles_Menu_Settings {
 	 * AJAX: Save tile
 	 */
 	public function ajax_save_tile(): void {
-		check_ajax_referer( 'side_tiles_menu_nonce', 'nonce' );
+		// Enable error logging for debugging
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'Side Tiles Menu: ajax_save_tile called' );
+			error_log( 'POST data: ' . print_r( $_POST, true ) );
+		}
 
+		// Check nonce
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'side_tiles_menu_nonce' ) ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Side Tiles Menu: Nonce verification failed' );
+			}
+			wp_send_json_error(
+				array(
+					'message' => __( 'Błąd weryfikacji bezpieczeństwa. Odśwież stronę i spróbuj ponownie.', 'side-tiles-menu' ),
+					'debug'   => 'nonce_failed',
+				)
+			);
+		}
+
+		// Check permissions
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Brak uprawnień', 'side-tiles-menu' ) ) );
-		}
-
-		$tile_id = sanitize_text_field( $_POST['tile_id'] ?? '' );
-		$tile    = array(
-			'id'           => $tile_id ?: uniqid( 'tile_', true ),
-			'title'        => sanitize_text_field( $_POST['title'] ?? '' ),
-			'content_type' => in_array( $_POST['content_type'] ?? '', array( 'svg', 'image', 'text' ), true ) ? $_POST['content_type'] : 'svg',
-			'svg_code'     => wp_kses_post( $_POST['svg_code'] ?? '' ),
-			'image_url'    => esc_url_raw( $_POST['image_url'] ?? '' ),
-			'text_content' => sanitize_text_field( $_POST['text_content'] ?? '' ),
-			'link_url'     => esc_url_raw( $_POST['link_url'] ?? '' ),
-			'link_target'  => in_array( $_POST['link_target'] ?? '', array( '_self', '_blank' ), true ) ? $_POST['link_target'] : '_self',
-			'order'        => absint( $_POST['order'] ?? 0 ),
-			'aria_label'   => sanitize_text_field( $_POST['aria_label'] ?? '' ),
-		);
-
-		$options = get_option( $this->option_name, array() );
-		$tiles   = $options['tiles'] ?? array();
-
-		// Update or add tile
-		$found = false;
-		foreach ( $tiles as $index => $existing_tile ) {
-			if ( $existing_tile['id'] === $tile['id'] ) {
-				$tiles[ $index ] = $tile;
-				$found           = true;
-				break;
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Side Tiles Menu: Permission denied' );
 			}
+			wp_send_json_error(
+				array(
+					'message' => __( 'Brak uprawnień', 'side-tiles-menu' ),
+					'debug'   => 'permission_denied',
+				)
+			);
 		}
 
-		if ( ! $found ) {
-			$tiles[] = $tile;
+		// Validate required fields
+		if ( empty( $_POST['title'] ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Tytuł kafelka jest wymagany', 'side-tiles-menu' ),
+					'debug'   => 'title_required',
+				)
+			);
 		}
 
-		// Sort by order
-		usort(
-			$tiles,
-			function ( $a, $b ) {
-				return ( $a['order'] ?? 0 ) - ( $b['order'] ?? 0 );
+		try {
+			$tile_id = sanitize_text_field( $_POST['tile_id'] ?? '' );
+			$tile    = array(
+				'id'           => $tile_id ?: uniqid( 'tile_', true ),
+				'title'        => sanitize_text_field( $_POST['title'] ?? '' ),
+				'content_type' => in_array( $_POST['content_type'] ?? '', array( 'svg', 'image', 'text' ), true ) ? $_POST['content_type'] : 'svg',
+				'svg_code'     => wp_kses_post( $_POST['svg_code'] ?? '' ),
+				'image_url'    => esc_url_raw( $_POST['image_url'] ?? '' ),
+				'text_content' => sanitize_text_field( $_POST['text_content'] ?? '' ),
+				'link_url'     => esc_url_raw( $_POST['link_url'] ?? '' ),
+				'link_target'  => in_array( $_POST['link_target'] ?? '', array( '_self', '_blank' ), true ) ? $_POST['link_target'] : '_self',
+				'order'        => absint( $_POST['order'] ?? 0 ),
+				'aria_label'   => sanitize_text_field( $_POST['aria_label'] ?? '' ),
+			);
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Side Tiles Menu: Tile data prepared: ' . print_r( $tile, true ) );
 			}
-		);
 
-		$options['tiles'] = $tiles;
-		update_option( $this->option_name, $options );
+			$options = get_option( $this->option_name, array() );
+			$tiles   = $options['tiles'] ?? array();
 
-		wp_send_json_success(
-			array(
-				'message' => __( 'Kafelek zapisany pomyślnie', 'side-tiles-menu' ),
-				'tile'    => $tile,
-			)
-		);
+			// Update or add tile
+			$found = false;
+			foreach ( $tiles as $index => $existing_tile ) {
+				if ( $existing_tile['id'] === $tile['id'] ) {
+					$tiles[ $index ] = $tile;
+					$found           = true;
+					break;
+				}
+			}
+
+			if ( ! $found ) {
+				$tiles[] = $tile;
+			}
+
+			// Sort by order
+			usort(
+				$tiles,
+				function ( $a, $b ) {
+					return ( $a['order'] ?? 0 ) - ( $b['order'] ?? 0 );
+				}
+			);
+
+			$options['tiles'] = $tiles;
+			$result           = update_option( $this->option_name, $options );
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Side Tiles Menu: Update option result: ' . ( $result ? 'success' : 'failed' ) );
+			}
+
+			wp_send_json_success(
+				array(
+					'message' => __( 'Kafelek zapisany pomyślnie', 'side-tiles-menu' ),
+					'tile'    => $tile,
+					'debug'   => array(
+						'tile_id' => $tile['id'],
+						'updated' => $result,
+					),
+				)
+			);
+		} catch ( Exception $e ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Side Tiles Menu: Exception: ' . $e->getMessage() );
+			}
+			wp_send_json_error(
+				array(
+					'message' => __( 'Błąd podczas zapisywania kafelka: ', 'side-tiles-menu' ) . $e->getMessage(),
+					'debug'   => 'exception',
+				)
+			);
+		}
 	}
 
 	/**

@@ -267,6 +267,13 @@ class Side_Tiles_Menu_Frontend {
 	 * Render tiles in footer
 	 */
 	public function render_tiles(): void {
+		$options = get_option( $this->option_name, array() );
+
+		// Check if auto-display is enabled
+		if ( ! ( $options['auto_display'] ?? true ) ) {
+			return;
+		}
+
 		if ( ! $this->should_display_tiles() ) {
 			return;
 		}
