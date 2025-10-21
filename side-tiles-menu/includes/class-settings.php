@@ -807,7 +807,10 @@ class Side_Tiles_Menu_Settings {
 						</tr>
 						<tr>
 							<th><label for="tile-link"><?php esc_html_e( 'Link (URL)', 'side-tiles-menu' ); ?></label></th>
-							<td><input type="url" id="tile-link" name="link_url" class="regular-text" required></td>
+							<td>
+								<input type="url" id="tile-link" name="link_url" class="regular-text" placeholder="<?php esc_attr_e( 'Opcjonalnie - pozostaw puste dla kafelka bez linku', 'side-tiles-menu' ); ?>">
+								<p class="description"><?php esc_html_e( 'Jeśli pozostawisz puste, kafelek będzie tylko dekoracyjny (bez linku)', 'side-tiles-menu' ); ?></p>
+							</td>
 						</tr>
 						<tr>
 							<th><label for="tile-target"><?php esc_html_e( 'Cel linku', 'side-tiles-menu' ); ?></label></th>

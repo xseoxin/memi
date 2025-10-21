@@ -26,6 +26,17 @@
 	outline: none;
 }
 
+/* Tile without link (decorative only) */
+.side-tile-no-link {
+	cursor: default;
+}
+
+/* Disable hover effects for tiles without links */
+.side-tile-no-link:hover {
+	transform: none !important;
+	background-color: inherit !important;
+}
+
 .side-tile:focus-visible {
 	outline: 2px solid currentColor;
 	outline-offset: 2px;

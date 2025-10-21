@@ -326,35 +326,51 @@ class Side_Tiles_Menu_Frontend {
 	private function render_single_tile_html( $tile ): string {
 		$tile_id     = esc_attr( $tile['id'] ?? '' );
 		$title       = esc_attr( $tile['title'] ?? '' );
-		$link_url    = esc_url( $tile['link_url'] ?? '#' );
+		$link_url    = $tile['link_url'] ?? '';
 		$link_target = esc_attr( $tile['link_target'] ?? '_self' );
 		$aria_label  = esc_attr( $tile['aria_label'] ?? $title );
+		$has_link    = ! empty( $link_url );
 
 		$rel = '_blank' === $link_target ? ' rel="noopener noreferrer"' : '';
 
 		ob_start();
-		?>
-		<a href="<?php echo $link_url; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
-		   class="side-tile"
-		   data-tile-id="<?php echo $tile_id; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
-		   target="<?php echo $link_target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
-		   <?php echo $rel; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		   title="<?php echo $title; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
-		   aria-label="<?php echo $aria_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
-		   tabindex="0">
-			<?php
-			$content_type = $tile['content_type'] ?? 'svg';
 
-			if ( 'svg' === $content_type && ! empty( $tile['svg_code'] ) ) {
-				echo wp_kses_post( $tile['svg_code'] );
-			} elseif ( 'image' === $content_type && ! empty( $tile['image_url'] ) ) {
-				echo '<img src="' . esc_url( $tile['image_url'] ) . '" alt="' . esc_attr( $title ) . '" loading="lazy">';
-			} elseif ( 'text' === $content_type && ! empty( $tile['text_content'] ) ) {
-				echo '<span class="tile-text">' . esc_html( $tile['text_content'] ) . '</span>';
-			}
+		// Render content
+		$content_type = $tile['content_type'] ?? 'svg';
+		ob_start();
+		if ( 'svg' === $content_type && ! empty( $tile['svg_code'] ) ) {
+			echo wp_kses_post( $tile['svg_code'] );
+		} elseif ( 'image' === $content_type && ! empty( $tile['image_url'] ) ) {
+			echo '<img src="' . esc_url( $tile['image_url'] ) . '" alt="' . esc_attr( $title ) . '" loading="lazy">';
+		} elseif ( 'text' === $content_type && ! empty( $tile['text_content'] ) ) {
+			echo '<span class="tile-text">' . esc_html( $tile['text_content'] ) . '</span>';
+		}
+		$tile_content = ob_get_clean();
+
+		// Render as link or div
+		if ( $has_link ) :
 			?>
-		</a>
+			<a href="<?php echo esc_url( $link_url ); ?>"
+			   class="side-tile"
+			   data-tile-id="<?php echo $tile_id; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
+			   target="<?php echo $link_target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
+			   <?php echo $rel; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			   title="<?php echo $title; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
+			   aria-label="<?php echo $aria_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
+			   tabindex="0">
+				<?php echo $tile_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</a>
+		<?php else : ?>
+			<div class="side-tile side-tile-no-link"
+			     data-tile-id="<?php echo $tile_id; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
+			     title="<?php echo $title; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
+			     aria-label="<?php echo $aria_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
+			     role="presentation">
+				<?php echo $tile_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</div>
 		<?php
+		endif;
+
 		return ob_get_clean();
 	}
 

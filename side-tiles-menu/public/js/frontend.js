@@ -106,7 +106,7 @@
 	 * Initialize click tracking
 	 */
 	function initClickTracking(container) {
-		const tiles = container.querySelectorAll('.side-tile');
+		const tiles = container.querySelectorAll('.side-tile:not(.side-tile-no-link)');
 
 		tiles.forEach(function (tile) {
 			tile.addEventListener('click', function (e) {
@@ -146,7 +146,7 @@
 	 * Initialize keyboard navigation
 	 */
 	function initKeyboardNavigation(container) {
-		const tiles = Array.from(container.querySelectorAll('.side-tile'));
+		const tiles = Array.from(container.querySelectorAll('.side-tile:not(.side-tile-no-link)'));
 
 		if (tiles.length === 0) return;
 
@@ -203,7 +203,7 @@
 			return;
 		}
 
-		const tiles = document.querySelectorAll('.side-tile');
+		const tiles = document.querySelectorAll('.side-tile:not(.side-tile-no-link)');
 
 		tiles.forEach(function (tile) {
 			tile.addEventListener('click', function (e) {
