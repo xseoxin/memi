@@ -1029,8 +1029,19 @@ class Side_Tiles_Menu_Settings {
 				error_log( 'Side Tiles Menu: Tile data prepared: ' . print_r( $tile, true ) );
 			}
 
-			$options = get_option( $this->option_name, array() );
-			$tiles   = $options['tiles'] ?? array();
+			// Get FRESH options from database
+			wp_cache_delete( $this->option_name, 'options' );
+			$options = get_option( $this->option_name );
+
+			if ( ! is_array( $options ) ) {
+				$options = array();
+			}
+
+			$tiles = $options['tiles'] ?? array();
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Side Tiles Menu: Current tiles count before save: ' . count( $tiles ) );
+			}
 
 			// Update or add tile
 			$found = false;
@@ -1056,15 +1067,22 @@ class Side_Tiles_Menu_Settings {
 
 			$options['tiles'] = $tiles;
 
-			// Force update by deleting first (ensures fresh save)
-			delete_option( $this->option_name );
-			$result = add_option( $this->option_name, $options, '', 'no' );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Side Tiles Menu: Tiles count after modification: ' . count( $tiles ) );
+				error_log( 'Side Tiles Menu: Attempting to save...' );
+			}
+
+			// Update option - pass false as third parameter to force update even if value unchanged
+			$result = update_option( $this->option_name, $options, false );
 
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'Side Tiles Menu: Add option result: ' . ( $result ? 'success' : 'failed' ) );
-				// Verify it was actually saved
+				error_log( 'Side Tiles Menu: Update option result: ' . ( $result ? 'true' : 'false' ) );
+
+				// Clear cache and verify
+				wp_cache_delete( $this->option_name, 'options' );
 				$verify = get_option( $this->option_name );
 				error_log( 'Side Tiles Menu: Verification - tiles count: ' . count( $verify['tiles'] ?? array() ) );
+				error_log( 'Side Tiles Menu: Verification - option exists: ' . ( $verify ? 'yes' : 'no' ) );
 			}
 
 			// Always return success if we got here (even if update_option returns false,
